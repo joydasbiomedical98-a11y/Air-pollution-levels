@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 Premium Air Quality Monitor - Live Maps & Analytics</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Leaflet Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏔️</text></svg>">
+</head>
+<body>
+    <!-- Nature Background Layers -->
+    <div class="nature-bg">
+        <div class="bg-layer bg-mountains"></div>
+        <div class="bg-layer bg-lake"></div>
+        <div class="bg-layer bg-forest"></div>
+        <div class="bg-overlay"></div>
+    </div>
+
+    <div class="container">
+        <!-- Premium Header -->
+        <div class="premium-header">
+            <div class="header-content">
+                <h1><i class="fas fa-mountain"></i> Premium Air Quality Monitor</h1>
+                <p class="subtitle">Live Maps • Advanced Analytics • Indian Weather Context</p>
+                <div class="weather-indicator">
+                    <span class="weather-icon">🏔️</span>
+                    <span class="weather-text">Himalayan Air Quality Network</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="settings-btn" onclick="toggleSettings()">
+                    <i class="fas fa-cog"></i> Preferences
+                </button>
+                <button class="location-btn" onclick="getCurrentLocation()">
+                    <i class="fas fa-map-marker-alt"></i> My Location
+                </button>
+            </div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="settings-panel">
+            <div class="settings-content">
+                <h3><i class="fas fa-sliders-h"></i> User Preferences</h3>
+                <form id="preferences-form">
+                    <div class="setting-group">
+                        <label for="aqi-model">AQI Calculation Model:</label>
+                        <select id="aqi-model" name="aqi_model">
+                            <option value="indian_naaqs" {% if selected_model == 'indian_naaqs' %}selected{% endif %}>Indian NAAQS (Recommended)</option>
+                            <option value="us_epa" {% if selected_model == 'us_epa' %}selected{% endif %}>US EPA Standard</option>
+                            <option value="eu" {% if selected_model == 'eu' %}selected{% endif %}>EU Air Quality Index</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label for="theme">Theme:</label>
+                        <select id="theme" name="theme">
+                            <option value="nature">Nature (Himalayan)</option>
+                            <option value="urban">Urban</option>
+                            <option value="minimal">Minimal</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="save-btn">Save Preferences</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Premium Dashboard Grid -->
+        <div class="premium-dashboard">
+            <!-- Live Map Section -->
+            <div class="map-section">
+                <div class="map-card">
+                    <div class="map-header">
+                        <h2><i class="fas fa-map-marked-alt"></i> Live Air Quality Map</h2>
+                        <div class="map-controls">
+                            <button class="map-btn active" onclick="showAllStations()">
+                                <i class="fas fa-globe-asia"></i> All India
+                            </button>
+                            <button class="map-btn" onclick="showNearbyStations()">
+                                <i class="fas fa-search-location"></i> Nearby
+                            </button>
+                        </div>
+                    </div>
+                    <div id="aqi-map" class="aqi-map"></div>
+                    <div class="map-legend">
+                        <div class="legend-item">
+                            <span class="legend-color good"></span>
+                            <span>Good (0-50)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color moderate"></span>
+                            <span>Moderate (51-100)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color unhealthy"></span>
+                            <span>Unhealthy (101-200)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color hazardous"></span>
+                            <span>Hazardous (201+)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div class="analytics-section">
+                <!-- Prediction Form Card -->
+                <div class="analytics-card prediction-card">
+                    <h2><i class="fas fa-brain"></i> AI Prediction Engine</h2>
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="traffic">Traffic Density (vehicles/hour)</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="traffic" name="traffic"
+                                       placeholder="Enter traffic density (0-100)"
+                                       required min="0" max="100" step="0.1">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="aqi-model-select">AQI Calculation Model</label>
+                            <select id="aqi-model-select" name="aqi_model">
+                                <option value="indian_naaqs" {% if selected_model == 'indian_naaqs' %}selected{% endif %}>🇮🇳 Indian NAAQS</option>
+                                <option value="us_epa" {% if selected_model == 'us_epa' %}selected{% endif %}>🇺🇸 US EPA</option>
+                                <option value="eu" {% if selected_model == 'eu' %}selected{% endif %}>🇪🇺 EU Standard</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn premium-btn">
+                            <i class="fas fa-search"></i> Analyze Air Quality
+                        </button>
+                    </form>
+
+                    {% if error %}
+                    <div class="error-card">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Error</h3>
+                        <p>{{ error }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if prediction %}
+                    <div class="result-card premium-result">
+                        <div class="result-header">
+                            <h3><i class="fas fa-chart-line"></i> Prediction Result</h3>
+                            <span class="model-badge">{{ selected_model|upper }}</span>
+                        </div>
+                        <div class="aqi-display">
+                            <div class="aqi-value">{{ "%.1f"|format(prediction) }}</div>
+                            <div class="aqi-status">{{ aqi_status }}</div>
+                        </div>
+                        <div class="result-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Traffic Factor:</span>
+                                <span class="detail-value">{{ "%.1f"|format(request.form.traffic) if request.form.traffic else "N/A" }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Model Used:</span>
+                                <span class="detail-value">{{ selected_model|replace('_', ' ')|title }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Weather Integration Card -->
+                <div class="analytics-card weather-card">
+                    <h2><i class="fas fa-cloud-sun"></i> Weather Context</h2>
+                    <div class="weather-grid">
+                        <div class="weather-city" data-city="Delhi">
+                            <div class="city-name">Delhi</div>
+                            <div class="weather-info">
+                                <span class="temp">--°C</span>
+                                <span class="condition">--</span>
+                            </div>
+                        </div>
+                        <div class="weather-city" data-city="Mumbai">
+                            <div class="city-name">Mumbai</div>
+                            <div class="weather-info">
+                                <span class="temp">--°C</span>
+                                <span class="condition">--</span>
+                            </div>
+                        </div>
+                        <div class="weather-city" data-city="Bangalore">
+                            <div class="city-name">Bangalore</div>
+                            <div class="weather-info">
+                                <span class="temp">--°C</span>
+                                <span class="condition">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <!-- Traffic vs AQI Chart -->
+                <div class="chart-card">
+                    <h2><i class="fas fa-chart-scatter"></i> Traffic vs AQI Correlation</h2>
+                    <div class="chart-container">
+                        <canvas id="trafficChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- AQI Categories Chart -->
+                <div class="chart-card">
+                    <h2><i class="fas fa-chart-pie"></i> AQI Distribution</h2>
+                    <div class="chart-container">
+                        <canvas id="aqiCategoriesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Real-time Monitoring -->
+                <div class="chart-card">
+                    <h2><i class="fas fa-wave-square"></i> Real-time Trends</h2>
+                    <div class="chart-container">
+                        <canvas id="realtimeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h4>Average AQI Today</h4>
+                <div class="value">87</div>
+            </div>
+            <div class="stat-card">
+                <h4>Peak Traffic Hour</h4>
+                <div class="value">5 PM</div>
+            </div>
+            <div class="stat-card">
+                <h4>Air Quality Trend</h4>
+                <div class="value">↗️ Rising</div>
+            </div>
+            <div class="stat-card">
+                <h4>Monitoring Stations</h4>
+                <div class="value">24</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <!-- Pass data from Flask to JavaScript -->
+    <script>
+        // Ensure data is always available, even on initial load
+        window.trafficData = {{ traffic_data|safe if traffic_data else [10, 20, 30, 40, 50, 60, 70, 80, 90]|tojson }};
+        window.aqiData = {{ aqi_data|safe if aqi_data else [50, 70, 90, 110, 130, 150, 170, 190, 210]|tojson }};
+        window.aqiCategories = {{ aqi_categories|safe if aqi_categories else {"Good (0-50)": 25, "Moderate (51-100)": 30, "Unhealthy (101-150)": 20, "Very Unhealthy (151-200)": 15, "Hazardous (201+)": 10}|tojson }};
+        window.aqiColors = {{ aqi_colors|safe if aqi_colors else {"Good": "#00e400", "Moderate": "#ffff00", "Unhealthy for Sensitive Groups": "#ff7e00", "Unhealthy": "#ff0000", "Very Unhealthy": "#8f3f97", "Hazardous": "#7e0023"}|tojson }};
+        window.monitoringStations = {{ monitoring_stations|safe if monitoring_stations else []|tojson }};
+        window.weatherData = {{ weather_data|safe if weather_data else {}|tojson }};
+        window.userPreferences = {{ user_preferences|safe if user_preferences else {}|tojson }};
+    </script>
+
+    <!-- Initialize result if prediction exists -->
+    {% if prediction %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update AQI status after page load
+            setTimeout(function() {
+                const prediction = {{ prediction }};
+                if (window.AirPollutionDashboard) {
+                    window.AirPollutionDashboard.updateResult(prediction);
+                }
+            }, 100);
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

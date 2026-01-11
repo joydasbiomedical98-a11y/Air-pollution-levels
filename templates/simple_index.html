@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Air Quality Monitor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .error {
+            background: rgba(255, 0, 0, 0.3);
+            color: #ffcccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌿 Simple Air Quality Monitor</h1>
+        <p>Test if Flask is working</p>
+
+        <form method="POST">
+            <label for="traffic">Traffic Density (0-100):</label>
+            <input type="number" id="traffic" name="traffic" min="0" max="100" required>
+            <button type="submit">Analyze</button>
+        </form>
+
+        {% if error %}
+        <div class="result error">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if prediction %}
+        <div class="result">
+            <strong>Prediction:</strong> {{ "%.1f"|format(prediction) }} AQI
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
